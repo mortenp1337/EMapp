@@ -134,9 +134,45 @@ const handleKeyUp = (event) => {
   }
 }
 
+const initMIDI = () => {
+  if (navigator.requestMIDIAccess) {
+    navigator.requestMIDIAccess().then(
+      (midiAccess) => {
+        for (let input of midiAccess.inputs.values()) {
+          input.onmidimessage = handleMIDIMessage
+        }
+      },
+      (err) => {
+        console.error('Failed to get MIDI access', err)
+      }
+    )
+  } else {
+    console.warn('MIDI not supported in this browser.')
+  }
+}
+
+const handleMIDIMessage = (event) => {
+  const [command, note, velocity] = event.data
+  switch (command) {
+    case 144: // Note on
+      if (velocity > 0) {
+        handleNoteOn(note)
+      } else {
+        handleNoteOff(note)
+      }
+      break
+    case 128: // Note off
+      handleNoteOff(note)
+      break
+    default:
+      break
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown)
   window.addEventListener('keyup', handleKeyUp)
+  initMIDI()
 })
 
 onUnmounted(() => {

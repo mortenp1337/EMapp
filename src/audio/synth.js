@@ -36,6 +36,9 @@ class Synth {
 
     // Set initial master volume
     this.masterGain.gain.value = 0.75;
+
+    // Initialize MIDI
+    this.initMIDI();
   }
 
   createPhaser() {
@@ -167,6 +170,41 @@ class Synth {
 
   getPhaseScopeData() {
     return this.getAnalyzerData(this.phaseScopeAnalyzer, true);
+  }
+
+  initMIDI() {
+    if (navigator.requestMIDIAccess) {
+      navigator.requestMIDIAccess().then(
+        (midiAccess) => {
+          for (let input of midiAccess.inputs.values()) {
+            input.onmidimessage = this.handleMIDIMessage.bind(this);
+          }
+        },
+        (err) => {
+          console.error('Failed to get MIDI access', err);
+        }
+      );
+    } else {
+      console.warn('MIDI not supported in this browser.');
+    }
+  }
+
+  handleMIDIMessage(event) {
+    const [command, note, velocity] = event.data;
+    switch (command) {
+      case 144: // Note on
+        if (velocity > 0) {
+          this.noteOn(note);
+        } else {
+          this.noteOff(note);
+        }
+        break;
+      case 128: // Note off
+        this.noteOff(note);
+        break;
+      default:
+        break;
+    }
   }
 }
 
