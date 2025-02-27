@@ -14,7 +14,7 @@
   "description": "A web-based synthesizer application",
   "dependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
-    "vite": "^5.0.0",
+    "vite": "^6.2.0",
     "vue": "^3.0.0"
   }
 }
